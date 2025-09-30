@@ -4,30 +4,37 @@ import Login from './components/auth/Login'
 import Dashboard from './components/dashboard/Dashboard'
 import Projects from './components/projects/Projects'
 import Messages from './components/messages/Messages'
+import MessagesEnhanced from './components/messages/MessagesEnhanced'
 import Profile from './components/profile/Profile'
 import AdminDashboard from './components/admin/AdminDashboard'
 import Layout from './components/layout/Layout'
 import RoleBasedRedirect from './components/common/RoleBasedRedirect'
 import { AuthProvider } from './contexts/AuthContext'
+import { ToastProvider } from './components/common/ToastContainer'
 
 function App() {
+  // Toggle between Messages and MessagesEnhanced by changing the route component
+  const useEnhancedMessages = true // Set to true to use the enhanced version
+
   return (
     <AuthProvider>
-      <Router basename="/portal/app">
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/" element={<ProtectedRoute />}>
-            <Route path="/" element={<Layout />}>
-              <Route index element={<RoleBasedRedirect />} />
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="projects" element={<Projects />} />
-              <Route path="messages" element={<Messages />} />
-              <Route path="profile" element={<Profile />} />
-              <Route path="admin" element={<AdminDashboard />} />
+      <ToastProvider>
+        <Router basename="/portal/app">
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/" element={<ProtectedRoute />}>
+              <Route path="/" element={<Layout />}>
+                <Route index element={<RoleBasedRedirect />} />
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="projects" element={<Projects />} />
+                <Route path="messages" element={useEnhancedMessages ? <MessagesEnhanced /> : <Messages />} />
+                <Route path="profile" element={<Profile />} />
+                <Route path="admin" element={<AdminDashboard />} />
+              </Route>
             </Route>
-          </Route>
-        </Routes>
-      </Router>
+          </Routes>
+        </Router>
+      </ToastProvider>
     </AuthProvider>
   )
 }

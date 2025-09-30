@@ -128,6 +128,14 @@ jobs:
     - name: Build Storybook
       run: npm run build-storybook || echo "Storybook not configured yet"
       
+    - name: Publish to Chromatic
+      uses: chromaui/action@v1
+      with:
+        projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+        buildScriptName: build-storybook
+        workingDir: ./
+        onlyChanged: true
+        
     - name: Deploy Storybook to GitHub Pages
       if: success()
       uses: peaceiris/actions-gh-pages@v3
