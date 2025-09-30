@@ -1,0 +1,132 @@
+/* NHD Brand Styles for Client Portal */
+
+/* Brand Animation Keyframes */
+@keyframes pulse-brand {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes bounce-brand {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Brand Transitions */
+.transition-brand {
+  transition: all 0.3s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+}
+
+.transition-elastic {
+  transition: all 0.4s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+}
+
+/* Brand Gradients */
+.bg-gradient-brand {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.bg-gradient-vibrant {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f64f59 100%);
+}
+
+.bg-gradient-dark {
+  background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+}
+
+/* Brand Shadows */
+.shadow-brand {
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.15);
+}
+
+.shadow-brand-lg {
+  box-shadow: 0 12px 40px rgba(102, 126, 234, 0.2);
+}
+
+/* Brand Spacing (8px unit system) */
+.space-brand-xs { margin: 4px; }
+.space-brand-sm { margin: 8px; }
+.space-brand-md { margin: 16px; }
+.space-brand-lg { margin: 24px; }
+.space-brand-xl { margin: 32px; }
+.space-brand-2xl { margin: 48px; }
+.space-brand-3xl { margin: 64px; }
+.space-brand-4xl { margin: 80px; }
+.space-brand-5xl { margin: 96px; }
+
+/* Hover Effects */
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+}
+
+.hover-glow {
+  transition: box-shadow 0.3s ease;
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+}
+
+/* Focus States */
+.focus-brand:focus-visible {
+  outline: 3px solid rgba(102, 126, 234, 0.6);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Brand Text Effects */
+.text-gradient-brand {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Loading States */
+.loading-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Brand Border Styles */
+.border-brand {
+  border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.border-brand-thick {
+  border: 2px solid rgba(102, 126, 234, 0.3);
+}
+
+/* Responsive Brand Adjustments */
+@media (max-width: 768px) {
+  .hover-lift:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.1);
+  }
+  
+  .hover-glow:hover {
+    box-shadow: 0 0 15px rgba(102, 126, 234, 0.2);
+  }
+}

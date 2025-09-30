@@ -1,0 +1,13 @@
+import { Navigate } from 'react-router-dom'
+import { useAuth } from '../../contexts/AuthContext'
+
+export default function RoleBasedRedirect() {
+  const { user } = useAuth()
+
+  // Redirect admin users to admin dashboard, clients to regular dashboard
+  if (user?.role === 'admin') {
+    return <Navigate to="/admin" replace />
+  }
+
+  return <Navigate to="/" replace />
+}
