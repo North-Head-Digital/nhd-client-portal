@@ -1,187 +1,283 @@
-# North Head Digital - Client Portal
+# NHD Client Portal
 
-A modern, professional client portal built with React, TypeScript, and Tailwind CSS for North Head Digital's clients to manage their projects, communicate with the team, and track progress.
+[![React](https://img.shields.io/badge/React-18+-blue.svg)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5+-blue.svg)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-5+-green.svg)](https://vitejs.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3+-blue.svg)](https://tailwindcss.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Features
+> Modern React client portal for North Head Digital with role-based authentication, project management, and team communication.
 
-### 🔐 Authentication
-- Secure login system with demo credentials
-- Session management with localStorage
-- Protected routes and authentication context
+## ✨ Features
 
-### 📊 Dashboard
-- Overview of active projects and milestones
-- Recent activity feed
-- Quick stats and metrics
-- Upcoming deadlines and tasks
+- **🎨 Modern UI/UX** - Beautiful, responsive design with Tailwind CSS
+- **🔐 Role-Based Authentication** - Admin and Client user roles
+- **📊 Project Dashboard** - Real-time project status and updates
+- **💬 Team Messaging** - Internal communication system
+- **👤 User Profiles** - Personal account management
+- **🛡️ TypeScript** - Type-safe development
+- **⚡ Vite** - Lightning-fast development and builds
+- **🎯 NHD Branding** - Custom design system and components
 
-### 📁 Project Management
-- Detailed project views with progress tracking
-- Deliverable tracking and status updates
-- Team member assignments
-- Budget and timeline information
-- Interactive project cards with modal details
-
-### 💬 Communication
-- Real-time messaging interface
-- Team member contact information
-- Message history and conversation threads
-- File sharing capabilities (UI ready)
-- Online status indicators
-
-### 👤 Profile Management
-- Personal information editing
-- Company details and contact information
-- Notification preferences
-- Security settings and two-factor authentication
-- Timezone and localization settings
-
-## Tech Stack
-
-- **Frontend**: React 18 with TypeScript
-- **Styling**: Tailwind CSS with custom design system
-- **Routing**: React Router v6
-- **Icons**: Lucide React
-- **Build Tool**: Vite
-- **Development**: ESLint + TypeScript strict mode
-
-## Getting Started
+## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ 
-- npm or yarn
 
-### Installation
+- **Node.js** 18+
+- **npm** or **yarn**
+- **NHD API Server** running (see [nhd-api](https://github.com/North-Head-Digital/nhd-api))
 
-1. Clone the repository:
+### 1. Clone the Repository
+
 ```bash
-cd /home/darkr/Desktop/DarkR.Dev/Websites/NHD-Client_Portal
+git clone https://github.com/North-Head-Digital/nhd-client-portal.git
+cd nhd-client-portal
 ```
 
-2. Install dependencies:
+### 2. Install Dependencies
+
 ```bash
 npm install
 ```
 
-3. Start the development server:
+### 3. Environment Configuration
+
+Create environment files:
+
+#### `.env.development`
+```env
+VITE_API_BASE_URL=http://localhost:5000
+VITE_ENV=development
+```
+
+#### `.env.production`
+```env
+VITE_API_BASE_URL=https://api.northheaddigital.com
+VITE_ENV=production
+```
+
+### 4. Development Server
+
 ```bash
 npm run dev
 ```
 
-4. Open your browser and navigate to `http://localhost:3000`
+Visit `http://localhost:3000` to view the application.
 
-### Demo Credentials
-- **Email**: `client@example.com`
-- **Password**: `password`
+### 5. Build for Production
 
-## Project Structure
+```bash
+# Development build (for testing with local API)
+npm run build:dev
+
+# Production build
+npm run build
+```
+
+## 🏗️ Project Structure
 
 ```
 src/
 ├── components/
+│   ├── admin/
+│   │   └── AdminDashboard.tsx     # Admin management interface
 │   ├── auth/
-│   │   └── Login.tsx
+│   │   └── Login.tsx              # Authentication component
+│   ├── common/
+│   │   ├── NHDLogo.tsx           # Brand logo component
+│   │   └── RoleBasedRedirect.tsx # Role-based routing
 │   ├── dashboard/
-│   │   └── Dashboard.tsx
+│   │   └── Dashboard.tsx         # Client dashboard
 │   ├── layout/
-│   │   ├── Layout.tsx
-│   │   ├── Header.tsx
-│   │   └── Sidebar.tsx
+│   │   ├── Header.tsx            # App header
+│   │   ├── Layout.tsx            # Main layout wrapper
+│   │   └── Sidebar.tsx           # Navigation sidebar
 │   ├── messages/
-│   │   └── Messages.tsx
-│   ├── projects/
-│   │   └── Projects.tsx
-│   └── profile/
-│       └── Profile.tsx
+│   │   └── Messages.tsx          # Messaging interface
+│   ├── profile/
+│   │   └── Profile.tsx           # User profile management
+│   └── projects/
+│       └── Projects.tsx          # Project management
 ├── contexts/
-│   └── AuthContext.tsx
-├── App.tsx
-├── main.tsx
-└── index.css
+│   └── AuthContext.tsx           # Authentication state management
+├── services/
+│   └── api.ts                    # API service layer
+├── styles/
+│   ├── brand.css                 # NHD brand-specific styles
+│   └── index.css                 # Global styles
+├── utils/
+│   └── apiConfig.ts              # Environment-aware API configuration
+├── App.tsx                       # Main application component
+├── main.tsx                      # Application entry point
+└── vite-env.d.ts                 # Vite environment types
 ```
 
-## Key Features Explained
+## 🎨 Design System
 
-### Authentication System
-- Mock authentication with localStorage persistence
-- Context-based state management for user data
-- Protected route implementation
-- Automatic redirects for unauthorized access
+### Brand Colors
 
-### Responsive Design
-- Mobile-first approach with Tailwind CSS
-- Collapsible sidebar for mobile devices
-- Responsive grid layouts
-- Touch-friendly interface elements
+The portal uses North Head Digital's brand colors:
 
-### Component Architecture
-- Reusable UI components with consistent styling
-- Context providers for global state management
-- Custom hooks for authentication logic
-- Modular component structure for easy maintenance
+```css
+/* Primary Colors */
+--primary-500: #667eea    /* Main brand color */
+--secondary-500: #764ba2  /* Secondary brand color */
+--accent-500: #f64f59     /* Accent color */
 
-### Data Management
-- Mock data for demonstration purposes
-- Structured data models for projects, messages, and users
-- State management with React hooks
-- Form handling with controlled components
+/* Gradients */
+--gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%)
+--gradient-vibrant: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f64f59 100%)
+```
 
-## Customization
+### Components
 
-### Branding
-- Update colors in `tailwind.config.js`
-- Modify company information in components
-- Replace logo and favicon in `index.html`
+- **NHDLogo** - Custom logo component with multiple variants
+- **Brand Buttons** - Styled buttons with brand gradients
+- **Navigation** - Role-based navigation system
+- **Cards** - Consistent card layouts with hover effects
 
-### Features
-- Add real API integration
-- Implement file upload functionality
-- Add real-time notifications
-- Integrate with project management tools
+## 🔐 Authentication & Authorization
 
-### Styling
-- Customize the design system in `index.css`
-- Modify component styles in individual files
-- Update color scheme and typography
+### User Roles
 
-## Deployment
+- **Admin Users:**
+  - Access to Admin Dashboard
+  - User management capabilities
+  - Project oversight
+  - System administration
 
-### Build for Production
+- **Client Users:**
+  - Personal dashboard
+  - Project status viewing
+  - Team messaging
+  - Profile management
+
+### Authentication Flow
+
+1. **Login** - JWT token authentication
+2. **Role Detection** - Automatic role-based routing
+3. **Protected Routes** - Authentication-required pages
+4. **Token Management** - Automatic token refresh and storage
+
+## 📱 Responsive Design
+
+The portal is fully responsive with breakpoints:
+
+- **Mobile:** `< 640px`
+- **Tablet:** `640px - 1024px`
+- **Desktop:** `> 1024px`
+
+## 🛠️ Development
+
+### Available Scripts
+
+```bash
+npm run dev          # Start development server
+npm run build        # Production build
+npm run build:dev    # Development build (for local API testing)
+npm run preview      # Preview production build
+npm run lint         # ESLint code checking
+```
+
+### Code Quality
+
+- **TypeScript** - Full type safety
+- **ESLint** - Code linting and formatting
+- **Tailwind CSS** - Utility-first styling
+- **Component Architecture** - Reusable, modular components
+
+## 🚀 Deployment
+
+### Development Deployment
+
+```bash
+npm run build:dev
+```
+
+This creates a build optimized for local development with the local API.
+
+### Production Deployment
+
 ```bash
 npm run build
 ```
 
-### Preview Production Build
-```bash
-npm run preview
+This creates a production build that connects to the live API.
+
+### Integration with Website
+
+The built portal is typically deployed to the main website:
+
+```
+NHD-Website/public/portal/app/
+├── index.html
+├── assets/
+│   ├── index-[hash].js
+│   └── index-[hash].css
+└── favicon.ico
 ```
 
-The built files will be in the `dist/` directory and can be deployed to any static hosting service.
+## 🔧 Configuration
 
-## Integration with Main Website
+### Environment Variables
 
-This client portal is designed to be integrated with your main North Head Digital website:
+| Variable | Description | Development | Production |
+|----------|-------------|-------------|------------|
+| `VITE_API_BASE_URL` | API server URL | `http://localhost:5000` | `https://api.northheaddigital.com` |
+| `VITE_ENV` | Environment mode | `development` | `production` |
 
-1. **Navigation Link**: Add a "Client Portal" button to your main website's navigation
-2. **Domain Setup**: Deploy to a subdomain like `clients.northheaddigital.com`
-3. **Authentication**: Implement SSO with your main website's user system
-4. **Branding**: Ensure consistent branding across both sites
+### API Configuration
 
-## Future Enhancements
+The app uses environment-aware API configuration:
 
-- [ ] Real-time notifications with WebSocket
-- [ ] File upload and sharing capabilities
-- [ ] Advanced project analytics and reporting
-- [ ] Mobile app development
-- [ ] Integration with external project management tools
-- [ ] Advanced security features (2FA, audit logs)
-- [ ] Multi-language support
-- [ ] Dark mode theme
+```typescript
+// Automatically detects environment and sets appropriate API URL
+export const API_BASE_URL = getApiBaseUrl();
+export const API_URL = `${API_BASE_URL}/api`;
+```
 
-## Support
+## 🧪 Testing
 
-For technical support or questions about this client portal, please contact the North Head Digital development team.
+### Test Accounts
+
+Use these accounts for testing:
+
+- **Admin:** `admin@northheaddigital.com` / `password123`
+- **Client:** `sarah@boldcoffee.com` / `password123`
+
+### Manual Testing Checklist
+
+- [ ] Login with admin account → redirects to admin dashboard
+- [ ] Login with client account → redirects to client dashboard
+- [ ] Navigation shows appropriate menu items for each role
+- [ ] API calls work with correct endpoints
+- [ ] Responsive design works on all screen sizes
+- [ ] Brand colors and styling are consistent
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Development Guidelines
+
+- Use TypeScript for all new components
+- Follow the existing component structure
+- Maintain brand consistency in styling
+- Test on multiple screen sizes
+- Ensure accessibility standards
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 📞 Support
+
+For support, email hello@northheaddigital.com or visit our [website](https://northheaddigital.com).
 
 ---
 
-**North Head Digital Client Portal** - Professional project management for our valued clients.
+**North Head Digital** - Transforming complex AI technology into simple, powerful business solutions.
