@@ -9,6 +9,7 @@ import Profile from './components/profile/Profile'
 import AdminDashboard from './components/admin/AdminDashboard'
 import Layout from './components/layout/Layout'
 import RoleBasedRedirect from './components/common/RoleBasedRedirect'
+import ErrorBoundary from './components/common/ErrorBoundary'
 import { AuthProvider } from './contexts/AuthContext'
 import { ToastProvider } from './components/common/ToastContainer'
 
@@ -17,39 +18,35 @@ function App() {
   const useEnhancedMessages = true // Set to true to use the enhanced version
 
   return (
-    <AuthProvider>
-      <ToastProvider>
-        <Router basename="/portal/app">
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/" element={<ProtectedRoute />}>
-              <Route path="/" element={<Layout />}>
-                <Route index element={<RoleBasedRedirect />} />
-                <Route path="dashboard" element={<Dashboard />} />
-                <Route path="projects" element={<Projects />} />
-                <Route path="messages" element={useEnhancedMessages ? <MessagesEnhanced /> : <Messages />} />
-                <Route path="profile" element={<Profile />} />
-                <Route path="admin" element={<AdminDashboard />} />
+    <ErrorBoundary>
+      <AuthProvider>
+        <ToastProvider>
+          <Router basename="/portal/app">
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/" element={<ProtectedRoute />}>
+                <Route path="/" element={<Layout />}>
+                  <Route index element={<RoleBasedRedirect />} />
+                  <Route path="dashboard" element={<Dashboard />} />
+                  <Route path="projects" element={<Projects />} />
+                  <Route path="messages" element={useEnhancedMessages ? <MessagesEnhanced /> : <Messages />} />
+                  <Route path="profile" element={<Profile />} />
+                  <Route path="admin" element={<AdminDashboard />} />
+                </Route>
               </Route>
-            </Route>
-          </Routes>
-        </Router>
-      </ToastProvider>
-    </AuthProvider>
+            </Routes>
+          </Router>
+        </ToastProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   )
 }
 
 function ProtectedRoute() {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
+  const { user, isLoading } = useAuth()
 
-  useEffect(() => {
-    // Check if user is authenticated using the shared auth system
-    const token = localStorage.getItem('nhd_auth_token')
-    const userData = localStorage.getItem('nhd_user_data')
-    setIsAuthenticated(!!(token && userData))
-  }, [])
-
-  if (isAuthenticated === null) {
+  // CRITICAL: Never trust localStorage alone - use AuthContext state
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
@@ -57,7 +54,8 @@ function ProtectedRoute() {
     )
   }
 
-  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />
+  // Only render protected routes if user is authenticated via backend verification
+  return user ? <Outlet /> : <Navigate to="/login" replace />
 }
 
 export default App

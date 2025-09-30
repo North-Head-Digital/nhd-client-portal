@@ -31,25 +31,38 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Check for existing auth token and verify with API
-    const token = localStorage.getItem('nhd_auth_token')
-    if (token) {
-      apiService.getCurrentUser()
-        .then((response) => {
-          setUser(response.user)
-        })
-        .catch((error) => {
-          console.error('Token verification failed:', error)
-          // Clear invalid token
-          localStorage.removeItem('nhd_auth_token')
-          localStorage.removeItem('nhd_user_data')
-        })
-        .finally(() => {
+    // CRITICAL: Always verify token with backend on app load
+    const initializeAuth = async () => {
+      try {
+        const token = localStorage.getItem('nhd_auth_token')
+        
+        if (!token) {
           setIsLoading(false)
-        })
-    } else {
-      setIsLoading(false)
+          return
+        }
+
+        // Verify token with backend - never trust localStorage alone
+        const response = await apiService.getCurrentUser()
+        
+        if (response && response.user) {
+          setUser(response.user)
+          // Update stored user data with fresh data from backend
+          localStorage.setItem('nhd_user_data', JSON.stringify(response.user))
+        } else {
+          throw new Error('Invalid user data received')
+        }
+      } catch (error) {
+        console.error('Token verification failed:', error)
+        // Clear all auth data on verification failure
+        localStorage.removeItem('nhd_auth_token')
+        localStorage.removeItem('nhd_user_data')
+        setUser(null)
+      } finally {
+        setIsLoading(false)
+      }
     }
+
+    initializeAuth()
   }, [])
 
   const login = async (email: string, password: string): Promise<boolean> => {
