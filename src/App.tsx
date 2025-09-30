@@ -1,5 +1,4 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom'
-import { useState, useEffect } from 'react'
 import Login from './components/auth/Login'
 import Dashboard from './components/dashboard/Dashboard'
 import Projects from './components/projects/Projects'
@@ -10,7 +9,7 @@ import AdminDashboard from './components/admin/AdminDashboard'
 import Layout from './components/layout/Layout'
 import RoleBasedRedirect from './components/common/RoleBasedRedirect'
 import ErrorBoundary from './components/common/ErrorBoundary'
-import { AuthProvider } from './contexts/AuthContext'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { ToastProvider } from './components/common/ToastContainer'
 
 function App() {
