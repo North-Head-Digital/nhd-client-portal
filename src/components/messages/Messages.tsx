@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { API_URL } from '../../utils/apiConfig'
+import logger from '../../utils/logger'
 import { 
   MessageSquare, 
   Send, 
@@ -85,10 +86,10 @@ export default function Messages() {
           const data = await response.json()
           setMessages(data.messages)
         } else {
-          console.error('Failed to fetch messages')
+          logger.error('Failed to fetch messages', new Error(`HTTP ${response.status}`))
         }
       } catch (error) {
-        console.error('Error fetching messages:', error)
+        logger.error('Error fetching messages', error as Error)
       } finally {
         setLoading(false)
       }
@@ -134,7 +135,7 @@ export default function Messages() {
         ))
       }
     } catch (error) {
-      console.error('Error marking message as read:', error)
+      logger.error('Error marking message as read', error as Error)
     }
   }
 
@@ -145,8 +146,7 @@ export default function Messages() {
     setSubmitting(true)
     try {
       const token = localStorage.getItem('nhd_auth_token')
-      console.log('Token:', token ? 'Present' : 'Missing')
-      console.log('Message data:', newMessage)
+      logger.debug('Sending message', { hasToken: !!token })
       
       const response = await fetch(`${API_URL}/messages`, {
         method: 'POST',
@@ -157,12 +157,10 @@ export default function Messages() {
         body: JSON.stringify(newMessage)
       })
       
-      console.log('Response status:', response.status)
-      console.log('Response headers:', response.headers)
       
       if (response.ok) {
         const responseData = await response.json()
-        console.log('Success response:', responseData)
+        logger.info('Message sent successfully', { messageId: responseData.message?._id })
         setShowNewMessageModal(false)
         setNewMessage({
           subject: '',
@@ -184,11 +182,11 @@ export default function Messages() {
         alert('Message sent successfully!')
       } else {
         const errorData = await response.json()
-        console.error('Failed to send message:', errorData)
+        logger.error('Failed to send message', new Error(errorData.error || 'Unknown error'))
         alert(`Failed to send message: ${errorData.error || 'Unknown error'}`)
       }
     } catch (error) {
-      console.error('Error sending message:', error)
+      logger.error('Error sending message', error as Error)
       alert(`Error sending message: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setSubmitting(false)
@@ -226,11 +224,11 @@ export default function Messages() {
         }
         alert('Reply sent successfully!')
       } else {
-        console.error('Failed to send reply')
+        logger.error('Failed to send reply', new Error(`HTTP ${response.status}`))
         alert('Failed to send reply. Please try again.')
       }
     } catch (error) {
-      console.error('Error sending reply:', error)
+      logger.error('Error sending reply', error as Error)
       alert('Error sending reply. Please try again.')
     } finally {
       setSubmitting(false)

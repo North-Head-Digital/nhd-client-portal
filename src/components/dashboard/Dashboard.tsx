@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { API_URL } from '../../utils/apiConfig'
+import logger from '../../utils/logger'
 import {
   Calendar,
   DollarSign,
@@ -93,7 +94,7 @@ export default function Dashboard() {
         })
 
       } catch (error) {
-        console.error('Error fetching dashboard data:', error)
+        logger.error('Error fetching dashboard data', error as Error)
       } finally {
         setLoading(false)
       }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { API_URL } from '../../utils/apiConfig'
+import logger from '../../utils/logger'
 import { 
   Users, 
   UserPlus, 
@@ -158,7 +159,7 @@ export default function AdminDashboard() {
         }
 
       } catch (error) {
-        console.error('Error fetching admin data:', error)
+        logger.error('Error fetching admin data', error as Error)
       } finally {
         setLoading(false)
       }
@@ -204,10 +205,10 @@ export default function AdminDashboard() {
           progress: 0
         })
       } else {
-        console.error('Failed to create project')
+        logger.error('Failed to create project', new Error(`HTTP ${response.status}`))
       }
     } catch (error) {
-      console.error('Error creating project:', error)
+      logger.error('Error creating project', error as Error)
     }
   }
 
@@ -229,10 +230,10 @@ export default function AdminDashboard() {
             : user
         ))
       } else {
-        console.error('Failed to deactivate user')
+        logger.error('Failed to deactivate user', new Error(`HTTP ${response.status}`))
       }
     } catch (error) {
-      console.error('Error deactivating user:', error)
+      logger.error('Error deactivating user', error as Error)
     }
   }
 
@@ -255,10 +256,10 @@ export default function AdminDashboard() {
             : user
         ))
       } else {
-        console.error('Failed to activate user')
+        logger.error('Failed to activate user', new Error(`HTTP ${response.status}`))
       }
     } catch (error) {
-      console.error('Error activating user:', error)
+      logger.error('Error activating user', error as Error)
     }
   }
 
@@ -292,10 +293,10 @@ export default function AdminDashboard() {
           setProjects(data.projects)
         }
       } else {
-        console.error('Failed to update project')
+        logger.error('Failed to update project', new Error(`HTTP ${response.status}`))
       }
     } catch (error) {
-      console.error('Error updating project:', error)
+      logger.error('Error updating project', error as Error)
     }
   }
 
@@ -336,11 +337,11 @@ export default function AdminDashboard() {
         }
         alert('Message sent successfully!')
       } else {
-        console.error('Failed to send message')
+        logger.error('Failed to send message', new Error(`HTTP ${response.status}`))
         alert('Failed to send message. Please try again.')
       }
     } catch (error) {
-      console.error('Error sending message:', error)
+      logger.error('Error sending message', error as Error)
       alert('Error sending message. Please try again.')
     }
   }
@@ -375,11 +376,11 @@ export default function AdminDashboard() {
         }
         alert('Reply sent successfully!')
       } else {
-        console.error('Failed to send reply')
+        logger.error('Failed to send reply', new Error(`HTTP ${response.status}`))
         alert('Failed to send reply. Please try again.')
       }
     } catch (error) {
-      console.error('Error sending reply:', error)
+      logger.error('Error sending reply', error as Error)
       alert('Error sending reply. Please try again.')
     }
   }

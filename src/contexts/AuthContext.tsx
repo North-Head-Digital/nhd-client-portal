@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useMemo, ReactNode } from 'react'
 import apiService from '../services/api'
+import logger from '../utils/logger'
 
 interface User {
   id: number
@@ -52,7 +53,7 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
           throw new Error('Invalid user data received')
         }
       } catch (error) {
-        console.error('Token verification failed:', error)
+        logger.error('Token verification failed', error as Error)
         // Clear all auth data on verification failure
         localStorage.removeItem('nhd_auth_token')
         localStorage.removeItem('nhd_user_data')
@@ -78,7 +79,7 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
       setIsLoading(false)
       return true
     } catch (error) {
-      console.error('Login failed:', error)
+      logger.error('Login failed', error as Error)
       setIsLoading(false)
       return false
     }
@@ -97,7 +98,7 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
       setIsLoading(false)
       return true
     } catch (error) {
-      console.error('Registration failed:', error)
+      logger.error('Registration failed', error as Error)
       setIsLoading(false)
       return false
     }

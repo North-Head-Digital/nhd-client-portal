@@ -1,4 +1,5 @@
 import { Component, ErrorInfo, ReactNode } from 'react'
+import logger from '../../utils/logger'
 
 interface Props {
   children: ReactNode
@@ -22,7 +23,7 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo)
+    logger.error('ErrorBoundary caught an error', error)
     
     // Log error for debugging
     this.logError(error, errorInfo)
@@ -34,21 +35,15 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   private logError = (error: Error, errorInfo: ErrorInfo) => {
-    // Log to console
-    console.error('Application Error:', {
-      message: error.message,
-      stack: error.stack,
-      componentStack: errorInfo.componentStack,
-      timestamp: new Date().toISOString(),
-      userAgent: navigator.userAgent,
-      url: window.location.href
-    })
+    // Log structured error information
+    logger.error('Application Error', error)
 
     // In a real application, you might want to send this to an error reporting service
     // like Sentry, LogRocket, or Bugsnag
     if (process.env.NODE_ENV === 'production') {
       // Example: send to error reporting service
       // errorReportingService.captureException(error, { extra: errorInfo })
+      logger.error('Error Info:', { componentStack: errorInfo.componentStack })
     }
   }
 

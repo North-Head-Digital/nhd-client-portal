@@ -1,4 +1,5 @@
 import { API_URL } from '../utils/apiConfig';
+import logger from '../utils/logger';
 
 interface User {
   id: number;
@@ -29,7 +30,7 @@ class ApiService {
 
   constructor() {
     this.baseURL = API_URL;
-    console.log('API Service initialized with base URL:', this.baseURL);
+    logger.info('API Service initialized', { baseURL: this.baseURL });
   }
 
   // Helper method to get auth headers
@@ -59,7 +60,7 @@ class ApiService {
 
       return data;
     } catch (error) {
-      console.error('API request failed:', error);
+      logger.error('API request failed', error as Error);
       throw error;
     }
   }

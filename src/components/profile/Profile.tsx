@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { API_URL } from '../../utils/apiConfig'
+import logger from '../../utils/logger'
 import { 
   User, 
   Mail, 
@@ -83,10 +84,10 @@ export default function Profile() {
         // Optionally refresh user data
         window.location.reload()
       } else {
-        console.error('Failed to save profile')
+        logger.error('Failed to save profile', new Error(`HTTP ${response.status}`))
       }
     } catch (error) {
-      console.error('Error saving profile:', error)
+      logger.error('Error saving profile', error as Error)
     }
   }
 

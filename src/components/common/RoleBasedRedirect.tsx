@@ -9,5 +9,6 @@ export default function RoleBasedRedirect() {
     return <Navigate to="/admin" replace />
   }
 
-  return <Navigate to="/" replace />
+  // For non-admin users, redirect to dashboard
+  return <Navigate to="/dashboard" replace />
 }

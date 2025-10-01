@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { API_URL } from '../../utils/apiConfig'
+import logger from '../../utils/logger'
 import { 
   FolderOpen, 
   Calendar, 
@@ -119,10 +120,10 @@ export default function Projects() {
           const data = await response.json()
           setProjects(data.projects)
         } else {
-          console.error('Failed to fetch projects')
+          logger.error('Failed to fetch projects', new Error(`HTTP ${response.status}`))
         }
       } catch (error) {
-        console.error('Error fetching projects:', error)
+        logger.error('Error fetching projects', error as Error)
       } finally {
         setLoading(false)
       }
@@ -170,15 +171,15 @@ Please review this project request and let me know if you need any additional in
           timeline: '',
           priority: 'medium'
         })
-        alert('Project request sent successfully! We\'ll review it and get back to you soon.')
+        alert('Project request sent successfully!')
       } else {
         const errorData = await response.json()
-        console.error('Failed to send project request:', errorData.message)
-        alert('Failed to send project request. Please try again.')
+        logger.error('Failed to send project request', new Error(errorData.message || 'Unknown error'))
+        alert('Failed to send project request')
       }
     } catch (error) {
-      console.error('Error sending project request:', error)
-      alert('Error sending project request. Please try again.')
+      logger.error('Error sending project request', error as Error)
+      alert('Error sending project request')
     } finally {
       setSubmitting(false)
     }
