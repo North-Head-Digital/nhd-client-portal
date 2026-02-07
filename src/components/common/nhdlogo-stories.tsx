@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import NHDLogo from './NHDLogo'
+import NHDLogo from './nhdlogo'
 
 const meta: Meta<typeof NHDLogo> = {
   title: 'Components/Common/NHDLogo',

@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import { useAuth } from '../../contexts/AuthContext'
-import { API_URL } from '../../utils/apiConfig'
+import { useEffect, useState } from 'react'
+import { useAuth } from '../../contexts/authcontext'
+import { API_URL } from '../../utils/apiconfig'
 import logger from '../../utils/logger'
 import { 
   User, 
@@ -19,28 +19,104 @@ import {
   Globe
 } from 'lucide-react'
 
+const PROFILE_PREFERENCES_KEY = 'nhd_profile_preferences'
+
+interface NotificationPreferences {
+  email: boolean
+  sms: boolean
+  push: boolean
+  marketing: boolean
+}
+
+interface SecurityPreferences {
+  twoFactor: boolean
+  sessionTimeout: string
+}
+
+interface ProfileFormData {
+  name: string
+  email: string
+  company: string
+  phone: string
+  address: string
+  website: string
+  timezone: string
+  notifications: NotificationPreferences
+  security: SecurityPreferences
+}
+
+interface ProfileUser {
+  name?: string
+  email?: string
+  company?: string
+  phone?: string
+  address?: string
+  website?: string
+  timezone?: string
+}
+
+const defaultPreferences: { notifications: NotificationPreferences; security: SecurityPreferences } = {
+  notifications: {
+    email: true,
+    sms: false,
+    push: true,
+    marketing: false
+  },
+  security: {
+    twoFactor: false,
+    sessionTimeout: '24 hours'
+  }
+}
+
+const getStoredPreferences = () => {
+  if (typeof window === 'undefined') {
+    return defaultPreferences
+  }
+
+  try {
+    const raw = localStorage.getItem(PROFILE_PREFERENCES_KEY)
+    if (!raw) return defaultPreferences
+
+    const parsed = JSON.parse(raw)
+    return {
+      notifications: {
+        ...defaultPreferences.notifications,
+        ...(parsed.notifications || {})
+      },
+      security: {
+        ...defaultPreferences.security,
+        ...(parsed.security || {})
+      }
+    }
+  } catch {
+    return defaultPreferences
+  }
+}
+
+const buildFormData = (currentUser: ProfileUser | null | undefined): ProfileFormData => {
+  const preferences = getStoredPreferences()
+
+  return {
+    name: currentUser?.name || '',
+    email: currentUser?.email || '',
+    company: currentUser?.company || '',
+    phone: currentUser?.phone || '',
+    address: currentUser?.address || '',
+    website: currentUser?.website || '',
+    timezone: currentUser?.timezone || 'America/New_York',
+    notifications: preferences.notifications,
+    security: preferences.security
+  }
+}
+
 export default function Profile() {
   const { user } = useAuth()
   const [isEditing, setIsEditing] = useState(false)
-  const [formData, setFormData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    company: user?.company || '',
-    phone: '',
-    address: '',
-    website: '',
-    timezone: 'America/New_York',
-    notifications: {
-      email: true,
-      sms: false,
-      push: true,
-      marketing: false
-    },
-    security: {
-      twoFactor: false,
-      sessionTimeout: '24 hours'
-    }
-  })
+  const [formData, setFormData] = useState<ProfileFormData>(() => buildFormData(user))
+
+  useEffect(() => {
+    setFormData(buildFormData(user))
+  }, [user])
 
   const handleInputChange = (field: string, value: string | boolean) => {
     if (field.includes('.')) {
@@ -61,6 +137,11 @@ export default function Profile() {
   }
 
   const handleSave = async () => {
+    if (!user?.id) {
+      logger.error('Cannot save profile without an authenticated user')
+      return
+    }
+
     try {
       const token = localStorage.getItem('nhd_auth_token')
       const response = await fetch(`${API_URL}/users/${user?.id}`, {
@@ -71,6 +152,7 @@ export default function Profile() {
         },
         body: JSON.stringify({
           name: formData.name,
+          email: formData.email,
           company: formData.company,
           phone: formData.phone,
           address: formData.address,
@@ -80,9 +162,22 @@ export default function Profile() {
       })
       
       if (response.ok) {
+        localStorage.setItem(PROFILE_PREFERENCES_KEY, JSON.stringify({
+          notifications: formData.notifications,
+          security: formData.security
+        }))
+        localStorage.setItem('nhd_user_data', JSON.stringify({
+          ...user,
+          name: formData.name,
+          email: formData.email,
+          company: formData.company,
+          phone: formData.phone,
+          address: formData.address,
+          website: formData.website,
+          timezone: formData.timezone
+        }))
+
         setIsEditing(false)
-        // Optionally refresh user data
-        window.location.reload()
       } else {
         logger.error('Failed to save profile', new Error(`HTTP ${response.status}`))
       }
@@ -92,26 +187,7 @@ export default function Profile() {
   }
 
   const handleCancel = () => {
-    // Reset form data to original values
-    setFormData({
-      name: user?.name || '',
-      email: user?.email || '',
-      company: user?.company || '',
-      phone: '',
-      address: '',
-      website: '',
-      timezone: 'America/New_York',
-      notifications: {
-        email: true,
-        sms: false,
-        push: true,
-        marketing: false
-      },
-      security: {
-        twoFactor: false,
-        sessionTimeout: '24 hours'
-      }
-    })
+    setFormData(buildFormData(user))
     setIsEditing(false)
   }
 
@@ -166,8 +242,8 @@ export default function Profile() {
                 </button>
               )}
             </div>
-            <h2 className="text-xl font-semibold text-gray-900 mt-4">{user?.name}</h2>
-            <p className="text-gray-600">{user?.company}</p>
+            <h2 className="text-xl font-semibold text-gray-900 mt-4">{formData.name || user?.name}</h2>
+            <p className="text-gray-600">{formData.company || user?.company}</p>
             <div className="mt-4">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
                 Active Client

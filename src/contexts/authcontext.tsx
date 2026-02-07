@@ -1,9 +1,10 @@
 import { createContext, useContext, useState, useEffect, useMemo, ReactNode } from 'react'
 import apiService from '../services/api'
 import logger from '../utils/logger'
+import { getErrorMessage, ErrorMessage } from '../utils/errormessages'
 
 interface User {
-  id: number
+  id: string
   name: string
   email: string
   company: string
@@ -19,8 +20,8 @@ interface User {
 
 interface AuthContextType {
   user: User | null
-  login: (email: string, password: string) => Promise<boolean>
-  register: (userData: { name: string; email: string; password: string; company: string }) => Promise<boolean>
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: ErrorMessage }>
+  register: (userData: { name: string; email: string; password: string; company: string }) => Promise<{ success: boolean; error?: ErrorMessage }>
   logout: () => void
   isLoading: boolean
 }
@@ -45,7 +46,7 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
         // Verify token with backend - never trust localStorage alone
         const response = await apiService.getCurrentUser()
         
-        if (response && response.user) {
+        if (response?.user) {
           setUser(response.user)
           // Update stored user data with fresh data from backend
           localStorage.setItem('nhd_user_data', JSON.stringify(response.user))
@@ -66,7 +67,7 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
     initializeAuth()
   }, [])
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<{ success: boolean; error?: ErrorMessage }> => {
     setIsLoading(true)
     
     try {
@@ -77,15 +78,16 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
       localStorage.setItem('nhd_user_data', JSON.stringify(response.user))
       
       setIsLoading(false)
-      return true
+      return { success: true }
     } catch (error) {
       logger.error('Login failed', error as Error)
       setIsLoading(false)
-      return false
+      const errorMessage = getErrorMessage(error as Error, 'login')
+      return { success: false, error: errorMessage }
     }
   }
 
-  const register = async (userData: { name: string; email: string; password: string; company: string }): Promise<boolean> => {
+  const register = async (userData: { name: string; email: string; password: string; company: string }): Promise<{ success: boolean; error?: ErrorMessage }> => {
     setIsLoading(true)
     
     try {
@@ -96,11 +98,12 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
       localStorage.setItem('nhd_user_data', JSON.stringify(response.user))
       
       setIsLoading(false)
-      return true
+      return { success: true }
     } catch (error) {
       logger.error('Registration failed', error as Error)
       setIsLoading(false)
-      return false
+      const errorMessage = getErrorMessage(error as Error, 'register')
+      return { success: false, error: errorMessage }
     }
   }
 

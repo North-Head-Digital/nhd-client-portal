@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useAuth } from '../../contexts/AuthContext'
-import { API_URL } from '../../utils/apiConfig'
+import { useAuth } from '../../contexts/authcontext'
+import { API_URL } from '../../utils/apiconfig'
 import logger from '../../utils/logger'
 import { 
   FolderOpen, 
@@ -17,6 +17,8 @@ import {
   Plus,
   Send
 } from 'lucide-react'
+import { getErrorMessage, ErrorMessage } from '../../utils/errormessages'
+import ErrorDisplay from '../common/errordisplay'
 
 interface Project {
   _id: string
@@ -104,6 +106,7 @@ export default function Projects() {
     priority: 'medium'
   })
   const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<ErrorMessage | null>(null)
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -137,6 +140,8 @@ export default function Projects() {
     if (!user) return
 
     setSubmitting(true)
+    setError(null)
+    
     try {
       const token = localStorage.getItem('nhd_auth_token')
       const response = await fetch(`${API_URL}/messages`, {
@@ -171,15 +176,22 @@ Please review this project request and let me know if you need any additional in
           timeline: '',
           priority: 'medium'
         })
-        alert('Project request sent successfully!')
+        // Show success message instead of alert
+        setError({
+          title: 'Project Request Sent',
+          message: 'Your project request has been sent successfully. Our team will review it and get back to you soon.',
+          type: 'info'
+        })
       } else {
         const errorData = await response.json()
         logger.error('Failed to send project request', new Error(errorData.message || 'Unknown error'))
-        alert('Failed to send project request')
+        const errorMessage = getErrorMessage(new Error(errorData.message || 'Failed to send project request'), 'project')
+        setError(errorMessage)
       }
     } catch (error) {
       logger.error('Error sending project request', error as Error)
-      alert('Error sending project request')
+      const errorMessage = getErrorMessage(error as Error, 'project')
+      setError(errorMessage)
     } finally {
       setSubmitting(false)
     }
@@ -222,6 +234,13 @@ Please review this project request and let me know if you need any additional in
           Request New Project
         </button>
       </div>
+
+      {/* Error Display */}
+      <ErrorDisplay 
+        error={error} 
+        onDismiss={() => setError(null)} 
+        className="mb-4"
+      />
 
       {/* Projects Grid */}
       {projects.length === 0 ? (

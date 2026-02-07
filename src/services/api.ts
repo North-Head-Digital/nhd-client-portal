@@ -1,8 +1,9 @@
-import { API_URL } from '../utils/apiConfig';
+import { API_URL } from '../utils/apiconfig';
 import logger from '../utils/logger';
+import { isRetryableError } from '../utils/errormessages';
 
 interface User {
-  id: number;
+  id: string;
   name: string;
   email: string;
   company: string;
@@ -26,7 +27,7 @@ interface HealthResponse {
 }
 
 class ApiService {
-  private baseURL: string;
+  private readonly baseURL: string;
 
   constructor() {
     this.baseURL = API_URL;
@@ -42,8 +43,8 @@ class ApiService {
     };
   }
 
-  // Generic request method
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  // Generic request method with enhanced error handling
+  private async request<T>(endpoint: string, options: RequestInit = {}, retryCount: number = 0): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
     const config: RequestInit = {
       headers: this.getAuthHeaders(),
@@ -55,12 +56,28 @@ class ApiService {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || `HTTP error! status: ${response.status}`);
+        // Create a more descriptive error with context
+        const errorMessage = data.error || data.message || `HTTP error! status: ${response.status}`;
+        const error = new Error(errorMessage);
+        
+        // Add response status to error for better handling
+        (error as any).status = response.status;
+        (error as any).endpoint = endpoint;
+        
+        throw error;
       }
 
       return data;
     } catch (error) {
       logger.error('API request failed', error as Error);
+      
+      // Retry logic for retryable errors
+      if (isRetryableError(error as Error) && retryCount < 2) {
+        logger.info(`Retrying request to ${endpoint}, attempt ${retryCount + 1}`);
+        await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1))); // Exponential backoff
+        return this.request<T>(endpoint, options, retryCount + 1);
+      }
+      
       throw error;
     }
   }

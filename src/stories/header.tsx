@@ -1,6 +1,6 @@
 // React import not needed in React 17+;
 
-import { Button } from './Button';
+import { Button } from './button';
 import './header.css';
 
 type User = {

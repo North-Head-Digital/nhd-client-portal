@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { API_URL } from '../utils/apiConfig'
+import { API_URL } from '../utils/apiconfig'
 
 export interface Message {
   _id: string

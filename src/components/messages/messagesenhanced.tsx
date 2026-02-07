@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useMessages } from '../../hooks/useMessages'
-import { useToast } from '../common/ToastContainer'
+import { useMessages } from '../../hooks/usemessages'
+import { useToast } from '../common/toastcontainer'
 import { 
   MessageSquare, 
   Send, 
@@ -12,6 +12,8 @@ import {
   CheckCheck,
   TrendingUp
 } from 'lucide-react'
+import { getErrorMessage, ErrorMessage } from '../../utils/errormessages'
+import ErrorDisplay from '../common/errordisplay'
 
 interface Message {
   _id: string
@@ -88,6 +90,7 @@ export default function MessagesEnhanced() {
   const [submitting, setSubmitting] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const [lastRefresh, setLastRefresh] = useState(new Date())
+  const [uiError, setUiError] = useState<ErrorMessage | null>(null)
 
   // Update last refresh time when messages change
   useEffect(() => {
@@ -144,24 +147,32 @@ export default function MessagesEnhanced() {
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newMessage.subject || !newMessage.content) {
-      showToast('Please fill in all required fields', 'warning')
+      setUiError(getErrorMessage(new Error('Required fields missing'), 'message'))
       return
     }
 
     setSubmitting(true)
-    const result = await sendMessage(newMessage)
+    setUiError(null)
     
-    if (result.success) {
-      showToast('Message sent successfully! 🎉', 'success')
-      setShowNewMessageModal(false)
-      setNewMessage({
-        subject: '',
-        content: '',
-        priority: 'medium',
-        category: 'general'
-      })
-    } else {
-      showToast(result.error || 'Failed to send message', 'error')
+    try {
+      const result = await sendMessage(newMessage)
+      
+      if (result.success) {
+        showToast('Message sent successfully! 🎉', 'success')
+        setShowNewMessageModal(false)
+        setNewMessage({
+          subject: '',
+          content: '',
+          priority: 'medium',
+          category: 'general'
+        })
+      } else {
+        const errorMessage = getErrorMessage(new Error(result.error || 'Failed to send message'), 'message')
+        setUiError(errorMessage)
+      }
+    } catch (error) {
+      const errorMessage = getErrorMessage(error as Error, 'message')
+      setUiError(errorMessage)
     }
     
     setSubmitting(false)
@@ -287,6 +298,13 @@ export default function MessagesEnhanced() {
           </button>
         </div>
       </div>
+
+      {/* Error Display */}
+      <ErrorDisplay 
+        error={uiError} 
+        onDismiss={() => setUiError(null)} 
+        className="mb-4"
+      />
 
       {/* Enhanced Filters */}
       <div className="card p-4">

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { API_URL } from '../../utils/apiConfig'
+import { API_URL } from '../../utils/apiconfig'
 import logger from '../../utils/logger'
 import { 
   Users, 
@@ -129,7 +129,8 @@ export default function AdminDashboard() {
         
         if (usersResponse.ok) {
           const usersData = await usersResponse.json()
-          setUsers(usersData.users)
+          // Filter out any null users from the API response
+          setUsers(usersData.users.filter((user: User) => user !== null))
         }
 
         // Fetch projects
@@ -169,9 +170,11 @@ export default function AdminDashboard() {
   }, [])
 
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.company.toLowerCase().includes(searchTerm.toLowerCase())
+    if (!user) return false
+    
+    const matchesSearch = user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.company?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesRole = filterRole === 'all' || user.role === filterRole
     
     return matchesSearch && matchesRole
@@ -225,7 +228,7 @@ export default function AdminDashboard() {
       
       if (response.ok) {
         setUsers(users.map(user => 
-          user.id === userId 
+          user && user.id === userId 
             ? { ...user, isActive: false }
             : user
         ))
@@ -251,7 +254,7 @@ export default function AdminDashboard() {
       
       if (response.ok) {
         setUsers(users.map(user => 
-          user.id === userId 
+          user && user.id === userId 
             ? { ...user, isActive: true }
             : user
         ))
@@ -539,8 +542,8 @@ export default function AdminDashboard() {
               {projects.slice(0, 5).map((project) => (
                 <div key={project._id} className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{project.name}</p>
-                    <p className="text-xs text-gray-500">{project.clientId.company}</p>
+                    <p className="text-sm font-medium text-gray-900">{project?.name || 'Unnamed Project'}</p>
+                    <p className="text-xs text-gray-500">{project.clientId?.company || 'N/A'}</p>
                   </div>
                   <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
                     {project.status}
@@ -565,8 +568,8 @@ export default function AdminDashboard() {
               {messages.slice(0, 5).map((message) => (
                 <div key={message._id} className="flex items-start space-x-3">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900">{message.subject}</p>
-                    <p className="text-xs text-gray-500">From {message.clientId.company}</p>
+                    <p className="text-sm font-medium text-gray-900">{message?.subject || 'No Subject'}</p>
+                    <p className="text-xs text-gray-500">From {message.clientId?.company || 'N/A'}</p>
                     <p className="text-xs text-gray-400">{formatDate(message.createdAt)}</p>
                   </div>
                   {!message.isRead && (
@@ -648,21 +651,21 @@ export default function AdminDashboard() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredUsers.map((user) => (
-                    <tr key={user.id} className="hover:bg-gray-50">
+                    <tr key={user?.id || Math.random()} className="hover:bg-purple-50 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="h-10 w-10 flex-shrink-0">
-                            <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                              <span className="text-sm font-medium text-gray-700">
-                                {user.name.split(' ').map(n => n[0]).join('')}
+                            <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
+                              <span className="text-sm font-medium text-purple-700">
+                                {user?.name?.split(' ').map(n => n[0]).join('') || 'U'}
                               </span>
                             </div>
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                            <div className="text-sm font-medium text-gray-900">{user?.name || 'Unknown'}</div>
                             <div className="text-sm text-gray-500 flex items-center">
                               <Mail className="h-3 w-3 mr-1" />
-                              {user.email}
+                              {user?.email || 'N/A'}
                             </div>
                           </div>
                         </div>
@@ -670,29 +673,29 @@ export default function AdminDashboard() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center text-sm text-gray-900">
                           <Building2 className="h-4 w-4 mr-2 text-gray-400" />
-                          {user.company}
+                          {user?.company || 'N/A'}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          user.role === 'admin' 
+                          user?.role === 'admin' 
                             ? 'bg-purple-100 text-purple-800' 
                             : 'bg-blue-100 text-blue-800'
                         }`}>
-                          {user.role}
+                          {user?.role || 'Unknown'}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          user.isActive 
+                          user?.isActive 
                             ? 'bg-green-100 text-green-800' 
                             : 'bg-red-100 text-red-800'
                         }`}>
-                          {user.isActive ? 'Active' : 'Inactive'}
+                          {user?.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {user.lastLogin ? formatDate(user.lastLogin) : 'Never'}
+                        {user?.lastLogin ? formatDate(user.lastLogin) : 'Never'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">
@@ -758,8 +761,8 @@ export default function AdminDashboard() {
               <div key={project._id} className="card p-6 hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
-                    <h3 className="text-lg font-medium text-gray-900">{project.name}</h3>
-                    <p className="text-sm text-gray-600 mt-1">{project.clientId.company}</p>
+                    <h3 className="text-lg font-medium text-gray-900">{project?.name || 'Unnamed Project'}</h3>
+                    <p className="text-sm text-gray-600 mt-1">{project.clientId?.company || 'N/A'}</p>
                   </div>
                   <div className="flex flex-col space-y-1">
                     <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
@@ -864,7 +867,7 @@ export default function AdminDashboard() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <h3 className={`text-lg font-medium ${!message.isRead ? 'text-gray-900' : 'text-gray-700'}`}>
-                        {message.subject}
+                        {message?.subject || 'No Subject'}
                       </h3>
                       <div className="flex items-center space-x-2">
                         <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(message.priority)}`}>
@@ -878,14 +881,14 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     <p className="text-sm text-gray-600 mt-1">
-                      From {message.clientId.company} • {formatDate(message.createdAt)}
+                      From {message.clientId?.company || 'N/A'} • {formatDate(message.createdAt)}
                     </p>
                     <p className="text-gray-700 mt-2 line-clamp-2">
                       {message.content}
                     </p>
                     <div className="flex items-center justify-between mt-4">
                       <span className="text-sm text-purple-600 bg-purple-100 px-2 py-1 rounded-full">
-                        {message.clientId.company}
+                        {message.clientId?.company || 'N/A'}
                       </span>
                       <button 
                         onClick={() => {
@@ -943,8 +946,8 @@ export default function AdminDashboard() {
                     required
                   >
                     <option value="">Select Client</option>
-                    {users.filter(u => u.role === 'client').map(user => (
-                      <option key={user.id} value={user.id}>{user.company} - {user.name}</option>
+                    {users.filter(u => u && u.role === 'client').map(user => (
+                      <option key={user?.id || Math.random()} value={user?.id || ''}>{user?.company || 'N/A'} - {user?.name || 'Unknown'}</option>
                     ))}
                   </select>
                 </div>
@@ -1103,9 +1106,9 @@ export default function AdminDashboard() {
                   className="input"
                   required
                 >
-                  {users.filter(u => u.role === 'client').map(client => (
-                    <option key={client.id} value={client.id}>
-                      {client.name} ({client.company})
+                  {users.filter(u => u && u.role === 'client').map(client => (
+                    <option key={client?.id || Math.random()} value={client?.id || ''}>
+                      {client?.name || 'Unknown'} ({client?.company || 'N/A'})
                     </option>
                   ))}
                 </select>
@@ -1239,7 +1242,7 @@ export default function AdminDashboard() {
                     </div>
                     <div>
                       <dt className="text-sm font-medium text-gray-500">Company</dt>
-                      <dd className="mt-1 text-sm text-gray-900">{selectedUser.company}</dd>
+                      <dd className="mt-1 text-sm text-gray-900">{selectedUser?.company || 'N/A'}</dd>
                     </div>
                     <div>
                       <dt className="text-sm font-medium text-gray-500">Role</dt>
@@ -1356,7 +1359,7 @@ export default function AdminDashboard() {
                   <h3 className="text-lg font-medium text-gray-900 mb-4">Project Information</h3>
                   <div className="space-y-4">
                     <div>
-                      <h4 className="text-md font-medium text-gray-900">{selectedProject.name}</h4>
+                      <h4 className="text-md font-medium text-gray-900">{selectedProject?.name || 'Unnamed Project'}</h4>
                       <p className="text-gray-600 mt-1">{selectedProject.description}</p>
                     </div>
                     
@@ -1429,7 +1432,7 @@ export default function AdminDashboard() {
                     </div>
                     <div>
                       <dt className="text-sm font-medium text-gray-500">Company</dt>
-                      <dd className="mt-1 text-sm text-gray-900">{selectedProject.clientId.company}</dd>
+                      <dd className="mt-1 text-sm text-gray-900">{selectedProject.clientId?.company || 'N/A'}</dd>
                     </div>
                     <div>
                       <dt className="text-sm font-medium text-gray-500">Email</dt>
@@ -1493,9 +1496,9 @@ export default function AdminDashboard() {
                   required
                 >
                   <option value="">Choose a client...</option>
-                  {users.filter(u => u.role === 'client').map(client => (
-                    <option key={client.id} value={client.id}>
-                      {client.name} ({client.company})
+                  {users.filter(u => u && u.role === 'client').map(client => (
+                    <option key={client?.id || Math.random()} value={client?.id || ''}>
+                      {client?.name || 'Unknown'} ({client?.company || 'N/A'})
                     </option>
                   ))}
                 </select>
@@ -1579,9 +1582,9 @@ export default function AdminDashboard() {
           <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-lg bg-white">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">{selectedMessage.subject}</h2>
+                <h2 className="text-2xl font-bold text-gray-900">{selectedMessage?.subject || 'No Subject'}</h2>
                 <p className="text-gray-600">
-                  From {selectedMessage.clientId.company} • {formatDate(selectedMessage.createdAt)}
+                  From {selectedMessage.clientId?.company || 'N/A'} • {formatDate(selectedMessage.createdAt)}
                 </p>
               </div>
               <button
@@ -1603,7 +1606,7 @@ export default function AdminDashboard() {
               <div className="bg-gray-50 rounded-lg p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-2">
-                    <span className="font-medium text-gray-900">{selectedMessage.clientId.company}</span>
+                    <span className="font-medium text-gray-900">{selectedMessage.clientId?.company || 'N/A'}</span>
                   </div>
                   <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(selectedMessage.priority)}`}>
                     {selectedMessage.priority}

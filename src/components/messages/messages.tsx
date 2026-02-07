@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { API_URL } from '../../utils/apiConfig'
+import { API_URL } from '../../utils/apiconfig'
 import logger from '../../utils/logger'
 import { 
   MessageSquare, 
