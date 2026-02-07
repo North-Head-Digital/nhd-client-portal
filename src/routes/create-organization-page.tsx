@@ -5,10 +5,18 @@ import { setCurrentOrgId } from '../lib/org-session'
 import { supabase } from '../lib/supabase'
 
 const SLUG_REGEX = /^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$/
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL ?? 'https://gdjgxezhibexyjraeudz.supabase.co'
+const SUPABASE_ANON_KEY =
+  import.meta.env.VITE_SUPABASE_ANON_KEY ?? 'sb_publishable_delZJu2iheVAeUrf0byzjg_8Hg251h0'
 
 type CreateOrgPayload = {
   name: string
   slug: string
+}
+
+type HttpError = Error & {
+  status?: number
+  body?: { error?: string; message?: string }
 }
 
 function randomSlugSuffix(length = 3): string {
@@ -64,16 +72,16 @@ function buildValidSlug(rawSlug: string, name: string): string {
 }
 
 async function formatCreateOrgError(error: unknown): Promise<string> {
-  const err = error as {
+  const err = error as HttpError & {
     message?: string
     status?: number
     context?: { status?: number; json?: () => Promise<{ error?: string; message?: string }> }
   }
 
-  const status = err.context?.status ?? err.status
-  let message = err.message || 'Unable to create organization.'
+  const status = err.status ?? err.context?.status
+  let message = err.body?.error || err.body?.message || err.message || 'Unable to create organization.'
 
-  if (err.context?.json) {
+  if (!err.body && err.context?.json) {
     try {
       const body = await err.context.json()
       message = body.error || body.message || message
@@ -101,42 +109,52 @@ async function getAccessToken(forceRefresh = false): Promise<string> {
   return accessToken
 }
 
+async function invokeCreateOrgHttp(payload: CreateOrgPayload, accessToken: string) {
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/create_org`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${accessToken}`
+    },
+    body: JSON.stringify(payload)
+  })
+
+  if (response.ok) {
+    return
+  }
+
+  let body: { error?: string; message?: string } | undefined
+  try {
+    body = (await response.json()) as { error?: string; message?: string }
+  } catch {
+    body = undefined
+  }
+
+  const error = new Error(body?.error || body?.message || 'Unable to create organization.') as HttpError
+  error.status = response.status
+  error.body = body
+  throw error
+}
+
 async function invokeCreateOrgWithRetry(payload: CreateOrgPayload) {
   const token = await getAccessToken(false)
 
-  let response = await supabase.functions.invoke('create_org', {
-    body: payload,
-    headers: {
-      Authorization: `Bearer ${token}`
+  try {
+    await invokeCreateOrgHttp(payload, token)
+  } catch (error) {
+    const err = error as HttpError
+    const status = err.status
+    const message = (err.message || '').toLowerCase()
+    const shouldRetry = status === 401 || message.includes('jwt')
+
+    if (!shouldRetry) {
+      throw error
     }
-  })
 
-  if (!response.error) {
-    return response
+    const refreshedToken = await getAccessToken(true)
+    await invokeCreateOrgHttp(payload, refreshedToken)
   }
-
-  const invokeError = response.error as {
-    message?: string
-    status?: number
-    context?: { status?: number }
-  }
-  const status = invokeError.context?.status ?? invokeError.status
-  const message = (invokeError.message || '').toLowerCase()
-  const shouldRetry = status === 401 || message.includes('jwt')
-
-  if (!shouldRetry) {
-    return response
-  }
-
-  const refreshedToken = await getAccessToken(true)
-  response = await supabase.functions.invoke('create_org', {
-    body: payload,
-    headers: {
-      Authorization: `Bearer ${refreshedToken}`
-    }
-  })
-
-  return response
 }
 
 export default function CreateOrganizationPage() {
@@ -207,12 +225,7 @@ export default function CreateOrganizationPage() {
       setSlug(finalSlug)
 
       const payload: CreateOrgPayload = { name: finalName, slug: finalSlug }
-
-      const { error: invokeError } = await invokeCreateOrgWithRetry(payload)
-      if (invokeError) {
-        setError(await formatCreateOrgError(invokeError))
-        return
-      }
+      await invokeCreateOrgWithRetry(payload)
 
       const memberships = await getActiveMembershipsForCurrentUser()
       if (memberships.length === 0) {
@@ -223,7 +236,7 @@ export default function CreateOrganizationPage() {
       setCurrentOrgId(memberships[0].organization_id)
       navigate('/app', { replace: true })
     } catch (createOrgError) {
-      setError(createOrgError instanceof Error ? createOrgError.message : 'Organization creation failed.')
+      setError(await formatCreateOrgError(createOrgError))
     } finally {
       setLoading(false)
     }
