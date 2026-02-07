@@ -6,6 +6,11 @@ import { supabase } from '../lib/supabase'
 
 const SLUG_REGEX = /^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$/
 
+type CreateOrgPayload = {
+  name: string
+  slug: string
+}
+
 function randomSlugSuffix(length = 3): string {
   const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789'
   return Array.from({ length }, () => alphabet[Math.floor(Math.random() * alphabet.length)]).join('')
@@ -83,6 +88,57 @@ async function formatCreateOrgError(error: unknown): Promise<string> {
   return message
 }
 
+async function getAccessToken(forceRefresh = false): Promise<string> {
+  const sessionResult = forceRefresh
+    ? await supabase.auth.refreshSession()
+    : await supabase.auth.getSession()
+
+  const accessToken = sessionResult.data.session?.access_token
+  if (!accessToken) {
+    throw new Error('Your session is no longer valid. Please sign in again.')
+  }
+
+  return accessToken
+}
+
+async function invokeCreateOrgWithRetry(payload: CreateOrgPayload) {
+  const token = await getAccessToken(false)
+
+  let response = await supabase.functions.invoke('create_org', {
+    body: payload,
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+
+  if (!response.error) {
+    return response
+  }
+
+  const invokeError = response.error as {
+    message?: string
+    status?: number
+    context?: { status?: number }
+  }
+  const status = invokeError.context?.status ?? invokeError.status
+  const message = (invokeError.message || '').toLowerCase()
+  const shouldRetry = status === 401 || message.includes('jwt')
+
+  if (!shouldRetry) {
+    return response
+  }
+
+  const refreshedToken = await getAccessToken(true)
+  response = await supabase.functions.invoke('create_org', {
+    body: payload,
+    headers: {
+      Authorization: `Bearer ${refreshedToken}`
+    }
+  })
+
+  return response
+}
+
 export default function CreateOrganizationPage() {
   const navigate = useNavigate()
   const [name, setName] = useState('')
@@ -150,12 +206,9 @@ export default function CreateOrganizationPage() {
 
       setSlug(finalSlug)
 
-      const payload: { name: string; slug: string } = { name: finalName, slug: finalSlug }
+      const payload: CreateOrgPayload = { name: finalName, slug: finalSlug }
 
-      const { error: invokeError } = await supabase.functions.invoke('create_org', {
-        body: payload
-      })
-
+      const { error: invokeError } = await invokeCreateOrgWithRetry(payload)
       if (invokeError) {
         setError(await formatCreateOrgError(invokeError))
         return
