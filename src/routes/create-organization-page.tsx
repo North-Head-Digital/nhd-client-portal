@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getActiveMembershipsForCurrentUser } from '../lib/org-queries'
-import { setCurrentOrgId } from '../lib/org-session'
+import { clearCurrentOrgId, setCurrentOrgId } from '../lib/org-session'
 import { supabase } from '../lib/supabase'
 
 const SLUG_REGEX = /^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$/
@@ -242,6 +242,12 @@ export default function CreateOrganizationPage() {
     }
   }
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    clearCurrentOrgId()
+    navigate('/login', { replace: true })
+  }
+
   if (checkingMemberships) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -253,6 +259,12 @@ export default function CreateOrganizationPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-lg rounded-lg border bg-white p-6 shadow-sm">
+        <div className="mb-4 flex justify-end">
+          <button type="button" onClick={handleLogout} className="btn-secondary">
+            Sign Out
+          </button>
+        </div>
+
         <h1 className="text-2xl font-semibold text-gray-900">Create Organization</h1>
         <p className="mt-1 text-sm text-gray-600">
           You need an organization before you can access the app.
